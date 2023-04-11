@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# Cmake build temporaries
+cmake-build-*
+build
