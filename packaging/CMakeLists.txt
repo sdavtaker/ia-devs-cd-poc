@@ -1,0 +1,23 @@
+if (WIN32) #Starting simple with archive only packages
+    set(CPACK_GENERATOR ZIP)
+else ()
+    set(CPACK_GENERATOR TGZ)
+endif ()
+
+set(CPACK_PACKAGE_NAME "ia_devs_cd_poc")
+set(CPACK_PACKAGE_VENDOR "Damian Vicino")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
+set(CPACK_PACKAGE_VERSION_MAJOR ${ia_devs_cd_poc_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${ia_devs_cd_poc_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${ia_devs_cd_poc_VERSION_PATCH})
+set(CPACK_VERBATIM_VARIABLES YES)
+set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE)
+set(CPACK_RESOURCE_FILE_README${CMAKE_CURRENT_LIST_DIR}/../README.md)
+set(CPACK_MONOLITHIC_INSTALL OFF)
+set(CPACK_COMPONENTS_GROUPING IGNORE)
+include(CPack)
+cpack_add_component(ia_devs_cd_lib
+        DISPLAY_NAME "IA-DEVS CD Library"
+        DESCRIPTION "IA-DEVS Library component"
+        REQUIRED
+        )
