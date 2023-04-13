@@ -19,6 +19,11 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 # Preventing writes to package registry by default
 set(CMAKE_EXPORT_NO_PACKAGE_REGISTRY YES)
 
+option(ENABLE_COVERAGE "Enable coverage instrumentation" OFF)
+if (ENABLE_COVERAGE)
+    message(STATUS "Building with coverage instrumentation")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 --coverage")
+endif ()
 # Validating config type and setting default if needed
 get_property(is_multi_conf_build GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if (NOT is_multi_conf_build)
