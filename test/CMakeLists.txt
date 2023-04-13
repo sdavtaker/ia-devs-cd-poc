@@ -1,16 +1,16 @@
 find_package(Catch2 REQUIRED)
 ENABLE_TESTING()
 
-add_executable(trivial_test)
+add_executable(test_interval)
 target_sources(
-        trivial_test
+        test_interval
         PRIVATE
-        test_placeholder.cpp
+        test_interval.cpp
 )
 target_link_libraries(
-        trivial_test
+        test_interval
         ia_devs_cd_lib
         Catch2::Catch2WithMain
 )
 
-add_test(NAME trivial_test COMMAND trivial_test)
+add_test(NAME test_interval COMMAND test_interval)
