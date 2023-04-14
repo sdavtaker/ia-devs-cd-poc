@@ -27,11 +27,11 @@
 
 /**
  * Definition of a generic interval struct to use in IA models definition.
- * The order and bound functions are required to apply over bound_image_t values only.
+ * The order and bound functions are required to apply over domain_t values only.
  */
-#include <cassert>
 #include <concepts>
-#include <limits>
+#include <stdexcept>
+
 namespace cadmium::iadevs {
 
 template<typename T>
@@ -40,47 +40,176 @@ struct bound {
     _value = value;
     _closed = closed;
   }
-  void set_inf() {
-    _value = std::numeric_limits<T>::max();
-    _closed = false;
-  }
-  bool is_closed() {
+  [[nodiscard]] bool is_closed() const {
     return _closed;
   }
 
-  T get_value() {
+  T get_value() const {
+    if (is_inf()) {
+      throw std::out_of_range("Getting finite value from infinite bound");
+    }
     return bound<T>::_value;
   }
 
-protected:
+  [[nodiscard]] bool is_inf() const {
+    return _inf;
+  }
+
+  void set_inf() {
+    _inf = true;
+    _closed = false;
+  }
+
+private:
   bool _closed;
+  bool _inf;
   T _value;
 };
 
-// Reserving max _value as infinite representation, check for infinity before
-// comparing values is on user to do.
-template<typename T>
-struct bound_with_inf : public bound<T> {
-  bool is_inf() {
-    return std::numeric_limits<T>::max() == bound<T>::_value;
-  }
-
-  T get_value() {
-    assert(!is_inf());
-    return bound<T>::_value;
-  }
-};
-
-#include <concepts>
-
-template<typename bound_image_t, bool allow_infinity = true> requires std::totally_ordered<bound_image_t>
+/**
+ * Simple representation of an interval
+ * In this context: left unbounded interval is an interval starting in -\inf with a finite upper bound;
+ * right unbounded interval is an interval starting in a finite lower bound and extending to +\inf;
+ * empty interval is an interval with no elements, and unbounded interval is the (-\inf, \inf) interval.
+ * @tparam domain_t
+ */
+template<typename domain_t> requires std::totally_ordered<domain_t>
 struct interval {
-  using bounded_image_t = std::conditional_t<allow_infinity, bound_with_inf<bound_image_t>, bound<bound_image_t>>;
-  bounded_image_t lower_bound;
-  bounded_image_t upper_bound;
-  bool operator<(const interval &rhs) {
-    return this->lower_bound._value < rhs.lower_bound._value;
+  using domain_bound_t = bound<domain_t>;
+  /**
+   * @return Is this a interval empty of elements?
+   */
+  [[nodiscard]] bool is_empty() const {
+    return _empty;
+  }
+
+  /**
+   * @return Is this interval lacking of a finite upper bound?
+   */
+  [[nodiscard]] bool is_right_unbounded() const {
+    return is_bound_inf(_upper_bound);
+  }
+
+  /**
+   * @return Is this interval lacking of a finite lower bound?
+   */
+  [[nodiscard]] bool is_left_unbounded() const {
+    return is_bound_inf(_lower_bound);
+  }
+
+  /**
+   * @return Is this interval unbounded at both ends?
+   */
+  [[nodiscard]] bool is_unbounded() const {
+    return is_left_unbounded() && is_right_unbounded();
+  }
+
+  /**
+   * @return Is this interval upper endpoint closed?
+   */
+  [[nodiscard]] bool is_upper_endpoint_closed() const {
+    return is_bound_closed(_upper_bound);
+  }
+
+  /**
+   * @return Is this interval lower endpoint closed?
+   */
+  [[nodiscard]] bool is_lower_endpoint_closed() const {
+    return is_bound_closed(_lower_bound);
+  }
+
+  /**
+   * @return lower endpoint finite value
+   */
+  domain_t get_lower_endpoint_value() const {
+    return get_bound_value(_lower_bound);
+  }
+
+  /**
+   * @return upper endpoint finite value
+   */
+  domain_t get_upper_endpoint_value() {
+    return get_bound_value(_upper_bound);
+  }
+
+  /**
+   * Set the interval as empty, including no elements
+   */
+  void set_empty() {
+    _lower_bound.set_value(0, false);
+    _upper_bound.set_value(0, false);
+  }
+
+  /**
+   * Set the interval to have no lower bound, and a finite upper endpoint
+   * @param value the upper endpoint
+   * @param closed if the upper endpoint is itself included
+   */
+  void set_left_unbounded_with_upper_endpoint_value(domain_t value, bool closed) {
+    set_finite_bound(_upper_bound, value, closed);
+    set_infinite_bound(_lower_bound);
+  }
+
+  /**
+   * Set the interval to have no upper bound, and a finite lower endpoint
+   * @param value the upper endpoint
+   * @param closed if the lower endpoint is itself included
+   */
+  void set_right_unbounded_with_lower_endpoint_value(domain_t value, bool closed) {
+    set_finite_bound(_lower_bound, value, closed);
+    set_infinite_bound(_upper_bound);
+  }
+  /**
+   * Set the interval to have both endpoints with finite values
+   * @param lower_value the lower bound value
+   * @param lower_closed is the lower bound closed?
+   * @param upper_value the upper bound value
+   * @param upper_closed is the upper bound closed?
+   */
+  void set_bounded(domain_t lower_value, bool lower_closed, domain_t upper_value, bool upper_closed) {
+    if (lower_value == upper_value && (!lower_closed || !upper_closed)) {
+      throw std::domain_error("There value cannot be included and excluded at the same time");
+    }
+    if (upper_value < lower_value) {
+      throw std::domain_error("Upper endpoint has to be grater than lower endpoint");
+    }
+    set_finite_bound(_lower_bound, lower_value, lower_closed);
+    set_finite_bound(_upper_bound, upper_value, upper_closed);
+  }
+  /**
+   * Set the interval to have no lower and no upper bounds effectively including all elements
+   */
+  void set_unbounded() {
+    set_infinite_bound(_lower_bound);
+    set_infinite_bound(_upper_bound);
+  }
+
+  //TODO: add comparison and arithmetic operations
+private:
+  bool _empty = true;
+  domain_bound_t _lower_bound;
+  domain_bound_t _upper_bound;
+
+  bool is_bound_inf(const domain_bound_t &bound) const {
+    return bound.is_inf();
+  }
+  bool is_bound_closed(const domain_bound_t &bound) const {
+    return bound.is_closed();
+  }
+  domain_t get_bound_value(const domain_bound_t &bound) const {
+    if (_empty) {
+      throw std::out_of_range("There is no value on empty intervals");
+    }
+    return bound.get_value();
+  }
+
+  void set_finite_bound(domain_bound_t &bound, domain_t value, bool closed) {
+    _empty = false;
+    bound.set_value(value, closed);
+  }
+  void set_infinite_bound(domain_bound_t &bound) {
+    _empty = false;
+    bound.set_inf();
   }
 };
 }
-
