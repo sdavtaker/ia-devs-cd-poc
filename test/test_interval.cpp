@@ -29,47 +29,83 @@
 
 SCENARIO("Basic operations with intervals", "[INTERVALS]") {
   GIVEN("an infinite integer interval") {
-    cadmium::iadevs::interval<int, true> i{};
-    WHEN("set to (inf-, inf+)") {
-      i.lower_bound.set_inf();
-      i.upper_bound.set_inf();
+    cadmium::iadevs::interval<int> i{};
+    WHEN("the intervals is created") {
+      THEN("the interval is empty") {
+        REQUIRE(i.is_empty());
+        REQUIRE_FALSE(i.is_left_unbounded());
+        REQUIRE_FALSE(i.is_right_unbounded());
+        REQUIRE_FALSE(i.is_unbounded());
+        REQUIRE_FALSE(i.is_lower_endpoint_closed());
+        REQUIRE_FALSE(i.is_upper_endpoint_closed());
+      } AND_THEN("get_value throws out of range") {
+        REQUIRE_THROWS_AS(i.get_upper_endpoint_value(), std::out_of_range);
+      }
+    }WHEN("set to (inf-, inf+)") {
+      i.set_unbounded();
       THEN("observing it returns (inf-, inf+)") {
-        REQUIRE(i.lower_bound.is_inf() == true);
-        REQUIRE(i.lower_bound.is_closed() == false);
-        REQUIRE(i.upper_bound.is_inf() == true);
-        REQUIRE(i.upper_bound.is_closed() == false);
+        REQUIRE_FALSE(i.is_empty());
+        REQUIRE(i.is_left_unbounded());
+        REQUIRE(i.is_right_unbounded());
+        REQUIRE(i.is_unbounded());
+        REQUIRE_FALSE(i.is_lower_endpoint_closed());
+        REQUIRE_FALSE(i.is_upper_endpoint_closed());
+        AND_WHEN("assigning a new empty interval") {
+          i = cadmium::iadevs::interval<int>{};
+          THEN("the interval is again empty") {
+            REQUIRE(i.is_empty());
+          }
+        }
       }
     }WHEN("set to (5, inf+)") {
-      i.lower_bound.set_value(5, false);
-      i.upper_bound.set_inf();
+      i.set_right_unbounded_with_lower_endpoint_value(5, false);
       THEN("observing it returns (5, inf+)") {
-        REQUIRE(i.lower_bound.is_inf() == false);
-        REQUIRE(i.lower_bound.is_closed() == false);
-        REQUIRE(i.lower_bound.get_value() == 5);
-        REQUIRE(i.upper_bound.is_inf() == true);
-        REQUIRE(i.upper_bound.is_closed() == false);
+        REQUIRE_FALSE(i.is_empty());
+        REQUIRE_FALSE(i.is_left_unbounded());
+        REQUIRE(i.is_right_unbounded());
+        REQUIRE_FALSE(i.is_unbounded());
+        REQUIRE_FALSE(i.is_lower_endpoint_closed());
+        REQUIRE_FALSE(i.is_upper_endpoint_closed());
+        REQUIRE(i.get_lower_endpoint_value() == 5);
+      } AND_THEN("getting the value of the inf+ bound throws runtime exception") {
+        REQUIRE_THROWS_AS(i.get_upper_endpoint_value(), std::out_of_range);
+      }
+    }WHEN("set to (inf-, 4]") {
+      i.set_left_unbounded_with_upper_endpoint_value(4, true);
+      THEN("observing it returns (inf-, 4]") {
+        REQUIRE_FALSE(i.is_empty());
+        REQUIRE(i.is_left_unbounded());
+        REQUIRE_FALSE(i.is_right_unbounded());
+        REQUIRE_FALSE(i.is_unbounded());
+        REQUIRE_FALSE(i.is_lower_endpoint_closed());
+        REQUIRE(i.is_upper_endpoint_closed());
+        REQUIRE(i.get_upper_endpoint_value() == 4);
+      } AND_THEN("getting the value of the inf- bound throws runtime exception") {
+        REQUIRE_THROWS_AS(i.get_lower_endpoint_value(), std::out_of_range);
       }
     }WHEN("set to [1, 2)") {
-      i.lower_bound.set_value(1, true);
-      i.upper_bound.set_value(2, false);
+      i.set_bounded(1, true, 2, false);
       THEN("observing it returns [1, 2)") {
-        REQUIRE(i.lower_bound.is_inf() == false);
-        REQUIRE(i.lower_bound.is_closed() == true);
-        REQUIRE(i.lower_bound.get_value() == 1);
-        REQUIRE(i.upper_bound.is_inf() == false);
-        REQUIRE(i.upper_bound.is_closed() == false);
-        REQUIRE(i.upper_bound.get_value() == 2);
+        REQUIRE_FALSE(i.is_empty());
+        REQUIRE_FALSE(i.is_left_unbounded());
+        REQUIRE_FALSE(i.is_right_unbounded());
+        REQUIRE_FALSE(i.is_unbounded());
+        REQUIRE(i.is_lower_endpoint_closed());
+        REQUIRE_FALSE(i.is_upper_endpoint_closed());
+        REQUIRE(i.get_lower_endpoint_value() == 1);
+        REQUIRE(i.get_upper_endpoint_value() == 2);
       }
     }WHEN("set to [1, 1]") {
-      i.lower_bound.set_value(1, true);
-      i.upper_bound.set_value(1, true);
+      i.set_bounded(1, true, 1, true);
       THEN("observing it returns [1, 2)") {
-        REQUIRE(i.lower_bound.is_inf() == false);
-        REQUIRE(i.lower_bound.is_closed() == true);
-        REQUIRE(i.lower_bound.get_value() == 1);
-        REQUIRE(i.upper_bound.is_inf() == false);
-        REQUIRE(i.upper_bound.is_closed() == true);
-        REQUIRE(i.upper_bound.get_value() == 1);
+        REQUIRE_FALSE(i.is_empty());
+        REQUIRE_FALSE(i.is_left_unbounded());
+        REQUIRE_FALSE(i.is_right_unbounded());
+        REQUIRE_FALSE(i.is_unbounded());
+        REQUIRE(i.is_lower_endpoint_closed());
+        REQUIRE(i.is_upper_endpoint_closed());
+        REQUIRE(i.get_lower_endpoint_value() == 1);
+        REQUIRE(i.get_upper_endpoint_value() == 1);
       }
     }
   }
@@ -77,16 +113,13 @@ SCENARIO("Basic operations with intervals", "[INTERVALS]") {
 
 SCENARIO("Basic errors with intervals", "[INTERVALS]") {
   GIVEN("an infinite integer interval") {
-    cadmium::iadevs::interval<int, true> i{};
+    cadmium::iadevs::interval<int> i{};
     WHEN("set to [0,0)") {
-      i.lower_bound.set_value(0, true);
-      i.upper_bound.set_value(0, false);
+      REQUIRE_THROWS_AS(i.set_bounded(0, true, 0, false), std::domain_error);
     }WHEN("set to (0,0)") {
-      i.lower_bound.set_value(0, false);
-      i.upper_bound.set_value(0, false);
+      REQUIRE_THROWS_AS(i.set_bounded(0, false, 0, false), std::domain_error);
     }WHEN("set to (1, 0)") {
-      i.lower_bound.set_value(1, false);
-      i.upper_bound.set_value(0, false);
+      REQUIRE_THROWS_AS(i.set_bounded(1, false, 0, false), std::domain_error);
     }
   }
 }
