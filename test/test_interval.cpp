@@ -123,3 +123,79 @@ SCENARIO("Basic errors with intervals", "[INTERVALS]") {
     }
   }
 }
+
+SCENARIO("Intervals additions", "[INTERVALS]") {
+  GIVEN("two intervals") {
+    cadmium::iadevs::interval<int> i{};
+    cadmium::iadevs::interval<int> j{};
+    WHEN("an interval is empty") {
+      j.set_bounded(1, false, 3, true);
+      THEN("their addition is out of the domain") {
+        REQUIRE_THROWS_AS(i + j, std::domain_error);
+      }
+    }WHEN("both intervals are unbounded") {
+      i.set_unbounded();
+      j.set_unbounded();
+      THEN("their addition is unbounded") {
+        auto k = i + j;
+        REQUIRE(k.is_unbounded());
+      }
+    }WHEN("an interval is unbounded") {
+      i.set_unbounded();
+      j.set_bounded(2, false, 3, true);
+      THEN("their addition is unbounded") {
+        auto k = i + j;
+        REQUIRE(k.is_unbounded());
+      }
+    }WHEN("both intervals are bounded and all endpoints closed") {
+      i.set_bounded(1, true, 2, true);
+      j.set_bounded(5, true, 7, true);
+      THEN("their addition is bounded and the endpoints closed") {
+        auto k = i + j;
+        REQUIRE(k.is_lower_endpoint_closed());
+        REQUIRE(k.is_upper_endpoint_closed());
+        REQUIRE(k.get_lower_endpoint_value() == 6);
+        REQUIRE(k.get_upper_endpoint_value() == 9);
+      }
+    } WHEN("an interval is left unbounded") {
+      i.set_bounded(1, true, 2, true);
+      j.set_left_unbounded_with_upper_endpoint_value(7, true);
+      THEN("their addition is left unbounded") {
+        auto k = i + j;
+        REQUIRE(k.is_left_unbounded());
+        REQUIRE(k.is_upper_endpoint_closed());
+        REQUIRE(k.get_upper_endpoint_value() == 9);
+      }
+    }WHEN("an interval is right unbounded") {
+      i.set_bounded(1, true, 2, true);
+      j.set_right_unbounded_with_lower_endpoint_value(7, true);
+      THEN("their addition is right unbounded") {
+        auto k = i + j;
+        REQUIRE(k.is_right_unbounded());
+        REQUIRE(k.is_lower_endpoint_closed());
+        REQUIRE(k.get_lower_endpoint_value() == 8);
+      }
+    }WHEN("an interval endpoint is open") {
+      i.set_bounded(1, false, 2, true);
+      j.set_bounded(5, true, 7, false);
+      THEN("their addition matching endpoints are open") {
+        auto k = i + j;
+        REQUIRE_FALSE(k.is_lower_endpoint_closed());
+        REQUIRE_FALSE(k.is_upper_endpoint_closed());
+        REQUIRE(k.get_lower_endpoint_value() == 6);
+        REQUIRE(k.get_upper_endpoint_value() == 9);
+      }
+    }
+    WHEN("both intervals endpoints are open") {
+      i.set_bounded(1, false, 2, false);
+      j.set_bounded(5, false, 7, false);
+      THEN("their addition matching endpoints are open") {
+        auto k = i + j;
+        REQUIRE_FALSE(k.is_lower_endpoint_closed());
+        REQUIRE_FALSE(k.is_upper_endpoint_closed());
+        REQUIRE(k.get_lower_endpoint_value() == 6);
+        REQUIRE(k.get_upper_endpoint_value() == 9);
+      }
+    }
+  }
+}

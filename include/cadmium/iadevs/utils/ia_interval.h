@@ -74,6 +74,8 @@ private:
  * @tparam domain_t
  */
 template<typename domain_t> requires std::totally_ordered<domain_t>
+    && requires(domain_t t) { t + t; }
+
 struct interval {
   using domain_bound_t = bound<domain_t>;
   /**
@@ -128,7 +130,7 @@ struct interval {
   /**
    * @return upper endpoint finite value
    */
-  domain_t get_upper_endpoint_value() {
+  domain_t get_upper_endpoint_value() const {
     return get_bound_value(_upper_bound);
   }
 
@@ -182,6 +184,40 @@ struct interval {
   void set_unbounded() {
     set_infinite_bound(_lower_bound);
     set_infinite_bound(_upper_bound);
+  }
+
+  /**
+   * Add this interval and that interval by adding their endpoints independently
+   * And endpoint in the result is closed only if the 2 endpoints being added are closed
+   * Adding to an empty is considered a domain error
+   * @param that the interval to be added to this
+   * @return a new interval with the addition result
+   */
+  interval<domain_t> operator+(const interval<domain_t> &that) const {
+    interval<domain_t> result{};
+    if (is_empty() || that.is_empty()){
+      throw std::domain_error("Adding to empty is out of the domain of interval addition");
+    }
+    if (is_unbounded() || that.is_unbounded()
+        || (is_left_unbounded() && that.is_right_unbounded())
+        || (that.is_left_unbounded() && is_left_unbounded())
+        ) {
+      result.set_unbounded();
+    } else if (is_left_unbounded() || that.is_left_unbounded()) {
+      result.set_left_unbounded_with_upper_endpoint_value(
+          get_upper_endpoint_value() + that.get_upper_endpoint_value(),
+          is_upper_endpoint_closed() && that.is_upper_endpoint_closed());
+    } else if (is_right_unbounded() || that.is_right_unbounded()) {
+      result.set_right_unbounded_with_lower_endpoint_value(
+          get_lower_endpoint_value() + that.get_lower_endpoint_value(),
+          is_lower_endpoint_closed() && that.is_lower_endpoint_closed());
+    } else {
+      result.set_bounded(get_lower_endpoint_value() + that.get_lower_endpoint_value(),
+                         is_lower_endpoint_closed() && that.is_lower_endpoint_closed(),
+                         get_upper_endpoint_value() + that.get_upper_endpoint_value(),
+                         is_upper_endpoint_closed() && that.is_upper_endpoint_closed());
+    }
+    return result;
   }
 
   //TODO: add comparison and arithmetic operations
