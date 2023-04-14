@@ -23,7 +23,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IA_DEVS_CD_POC_GENERATOR_H
-#define IA_DEVS_CD_POC_GENERATOR_H
+#pragma once
 
-#endif //IA_DEVS_CD_POC_GENERATOR_H
+/**
+ * This is a simple implementation of a UA Generator model approximated
+ * by using double intervals.
+ * Determinism on the IA-DEVS defined functions is expected, but mutability
+ * is allowed for tracing and other orthogonal concerns. The call to any of
+ * the functions MAY be cached by the simulator.
+ * All IA functions have to return bounded results, including TA to be computable.
+ */
+
+namespace cadmium::iadevs::basic_models {
+struct generator {
+
+};
+}
