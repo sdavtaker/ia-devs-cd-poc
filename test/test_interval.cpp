@@ -185,8 +185,7 @@ SCENARIO("Intervals additions", "[INTERVALS]") {
         REQUIRE(k.get_lower_endpoint_value() == 6);
         REQUIRE(k.get_upper_endpoint_value() == 9);
       }
-    }
-    WHEN("both intervals endpoints are open") {
+    }WHEN("both intervals endpoints are open") {
       i.set_bounded(1, false, 2, false);
       j.set_bounded(5, false, 7, false);
       THEN("their addition matching endpoints are open") {
@@ -195,6 +194,92 @@ SCENARIO("Intervals additions", "[INTERVALS]") {
         REQUIRE_FALSE(k.is_upper_endpoint_closed());
         REQUIRE(k.get_lower_endpoint_value() == 6);
         REQUIRE(k.get_upper_endpoint_value() == 9);
+      }
+    }
+  }
+}
+
+SCENARIO("Equality of intervals", "[INTERVALS]") {
+  GIVEN("an empty interval") {
+    cadmium::iadevs::interval<int> i{};
+    WHEN("comparing to a empty interval") {
+      cadmium::iadevs::interval<int> j{};
+      THEN("they are seen as equal") {
+        REQUIRE(i == j);
+      }
+    }WHEN("comparing to an unbounded interval") {
+      cadmium::iadevs::interval<int> j{};
+      j.set_unbounded();
+      THEN("they are considered not equal") {
+        REQUIRE_FALSE(i == j);
+      }
+    }WHEN("comparing to a bounded interval [1, 2)") {
+      cadmium::iadevs::interval<int> j{};
+      j.set_bounded(1, true, 2, false);
+      THEN("they are considered not equal") {
+        REQUIRE_FALSE(i == j);
+      }
+    }
+  }GIVEN("a unbounded interval") {
+    cadmium::iadevs::interval<int> i{};
+    i.set_unbounded();
+    WHEN("comparing to an unbounded interval") {
+      cadmium::iadevs::interval<int> j{};
+      j.set_unbounded();
+      THEN("they are considered not equal") {
+        REQUIRE(i == j);
+      }
+    }WHEN("comparing to a bounded interval [1, 2)") {
+      cadmium::iadevs::interval<int> j{};
+      j.set_bounded(1, true, 2, false);
+      THEN("they are considered not equal") {
+        REQUIRE_FALSE(i == j);
+      }
+    }
+  }GIVEN("a bounded interval [1, 2)") {
+    cadmium::iadevs::interval<int> i{};
+    i.set_bounded(1, true, 2, false);
+    WHEN("comparing to a bounded interval [1, 2)") {
+      cadmium::iadevs::interval<int> j{};
+      j.set_bounded(1, true, 2, false);
+      THEN("they are considered equal") {
+        REQUIRE(i == j);
+      }
+    }WHEN("comparing to a bounded interval [1, 2]") {
+      cadmium::iadevs::interval<int> j{};
+      j.set_bounded(1, true, 2, true);
+      THEN("they are not considered equal") {
+        REQUIRE_FALSE(i == j);
+      }
+    }WHEN("comparing to a bounded interval (1, 2)") {
+      cadmium::iadevs::interval<int> j{};
+      j.set_bounded(1, false, 2, false);
+      THEN("they are not considered equal") {
+        REQUIRE_FALSE(i == j);
+      }
+    }WHEN("comparing to a bounded interval [1, 3)") {
+      cadmium::iadevs::interval<int> j{};
+      j.set_bounded(1, true, 3, false);
+      THEN("they are not considered equal") {
+        REQUIRE_FALSE(i == j);
+      }
+    }WHEN("comparing to a bounded interval [0, 2)") {
+      cadmium::iadevs::interval<int> j{};
+      j.set_bounded(0, true, 2, false);
+      THEN("they are not considered equal") {
+        REQUIRE_FALSE(i == j);
+      }
+    }WHEN("comparing to a semi bounded interval (inf-, 2)") {
+      cadmium::iadevs::interval<int> j{};
+      j.set_right_unbounded_with_lower_endpoint_value(2, false);
+      THEN("they are not considered equal") {
+        REQUIRE_FALSE(i == j);
+      }
+    }WHEN("comparing to a semi bounded interval [1, inf+)") {
+      cadmium::iadevs::interval<int> j{};
+      j.set_left_unbounded_with_upper_endpoint_value(1, true);
+      THEN("they are not considered equal") {
+        REQUIRE_FALSE(i == j);
       }
     }
   }

@@ -75,7 +75,6 @@ private:
  */
 template<typename domain_t> requires std::totally_ordered<domain_t>
     && requires(domain_t t) { t + t; }
-
 struct interval {
   using domain_bound_t = bound<domain_t>;
   /**
@@ -195,7 +194,7 @@ struct interval {
    */
   interval<domain_t> operator+(const interval<domain_t> &that) const {
     interval<domain_t> result{};
-    if (is_empty() || that.is_empty()){
+    if (is_empty() || that.is_empty()) {
       throw std::domain_error("Adding to empty is out of the domain of interval addition");
     }
     if (is_unbounded() || that.is_unbounded()
@@ -220,7 +219,73 @@ struct interval {
     return result;
   }
 
-  //TODO: add comparison and arithmetic operations
+/**
+ * Negates an interval, eg. (5, 6) -> (-6, -5)
+ * @return a new interval with the addition result
+ */
+  interval<domain_t> operator-() const {
+    if (this->is_empty() || this->is_unbounded()) {
+      return *this;
+    }
+    interval<domain_t> result{};
+    if (this->is_left_unbounded()) {
+      result.set_right_unbounded_with_lower_endpoint_value(-this->get_lower_endpoint_value(),
+                                                           this->is_lower_endpoint_closed());
+    } else if (this->is_right_unbounded()) {
+      result.set_left_unbounded_with_upper_endpoint_value(-this->get_upper_endpoint_value(),
+                                                          this->is_upper_endpoint_closed());
+    } else {
+      result.set_bounded(-this->get_upper_endpoint_value(), this->is_upper_endpoint_closed(),
+                         -this->get_lower_endpoint_value(), this->is_lower_endpoint_closed());
+    }
+    return result;
+  }
+
+  /**
+ * Subtract that interval from this interval by negating the second and adding
+ * Subtracting from an empty or to an empty is considered a domain error
+ * @param that the interval to be subtracted to this
+ * @return a new interval with the subtraction result
+ */
+  interval<domain_t> operator-(const interval<domain_t> &that) const {
+    if (is_empty() || that.is_empty()) {
+      throw std::domain_error("Adding to empty is out of the domain of interval addition");
+    }
+    return *this + (-that);
+  }
+
+  bool operator==(const interval<domain_t> &that) const {
+    if (this->is_empty()) {
+      return that.is_empty();
+    }
+    if (this->is_unbounded()) {
+      return that.is_unbounded();
+    }
+    if (this->is_left_unbounded()) {
+      if (that.is_left_unbounded()) {
+        return (this->get_upper_endpoint_value() == that.get_upper_endpoint_value())
+            && (this->is_upper_endpoint_closed() == that.is_upper_endpoint_closed());
+      } else {
+        return false;
+      }
+    }
+    if (this->is_right_unbounded()) {
+      if (that.is_right_unbounded()) {
+        return (this->get_lower_endpoint_value() == that.get_lower_endpoint_value())
+            && (this->is_lower_endpoint_closed() == that.is_lower_endpoint_closed());
+      } else {
+        return false;
+      }
+    }
+    return !that.is_left_unbounded()
+        && !that.is_right_unbounded()
+        && (this->get_upper_endpoint_value() == that.get_upper_endpoint_value())
+        && (this->get_lower_endpoint_value() == that.get_lower_endpoint_value())
+        && (this->is_lower_endpoint_closed() == that.is_lower_endpoint_closed())
+        && (this->is_upper_endpoint_closed() == that.is_upper_endpoint_closed());
+  }
+
+  //TODO: add other comparison and arithmetic operations
 private:
   bool _empty = true;
   domain_bound_t _lower_bound;
@@ -243,6 +308,7 @@ private:
     _empty = false;
     bound.set_value(value, closed);
   }
+
   void set_infinite_bound(domain_bound_t &bound) {
     _empty = false;
     bound.set_inf();
