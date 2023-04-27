@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.24)
 project(ia_devs_cd_poc
         VERSION 0.1.0
         DESCRIPTION "A proof of concept of a highly scalable IA-DEVS simulator"

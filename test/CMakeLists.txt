@@ -9,7 +9,7 @@ target_sources(
 )
 target_link_libraries(
         test_interval
-        ia_devs_cd_lib
+        ia_devs_cd::lib
         Catch2::Catch2WithMain
 )
 add_test(NAME test_interval COMMAND test_interval)
@@ -22,7 +22,7 @@ target_sources(
 )
 target_link_libraries(
         test_generator
-        ia_devs_cd_lib
+        ia_devs_cd::lib
         Catch2::Catch2WithMain
 )
 add_test(NAME test_generator COMMAND test_generator)
@@ -35,7 +35,7 @@ target_sources(
 )
 target_link_libraries(
         test_simulator
-        ia_devs_cd_lib
+        ia_devs_cd::lib
         Catch2::Catch2WithMain
 )
 add_test(NAME test_simulator COMMAND test_simulator)
