@@ -34,3 +34,9 @@
 # Cmake build temporaries
 cmake-build-*
 build
+
+# IDE 
+.vscode
+.idea
+.vs
+CMakeUserPresets.json
