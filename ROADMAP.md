@@ -10,11 +10,11 @@ Project status: Proof of Concept, tracking single platform for now.
   - [x] Vcpkg dependencies
   - [x] Clang-format (llvm-style)
   - [x] LICENSE
+- [x] CONTRIBUTION.md shows how to come to this file and discuss ideas.
+- [ ] CONTRIBUTION.md complete referenced architecture and design docs.
 - [ ] README.md shows basic user usage workflow.
 - [ ] README.md build and test labels.
 - [ ] Coverage metrics -> and README.md label for coverage.
-- [ ] CONTRIBUTION.md shows how to come to this file and discuss ideas.
-- [ ] CONTRIBUTION.md discuss architecture and design.
 - [ ] First basic_model: generator.
 - [ ] Second basic_model: counter.
 - [ ] Concept validation for Atomic models.
