@@ -23,11 +23,12 @@ The [doc](./doc) directory of the project contains all project documentation tha
 For artifacts not expected to be included in the releases, like GitHub Issues templates, Pull Request templates, and Wiki content, open a new [Issue on GitHub](https://github.com/sdavtaker/ia-devs-cd-poc/issues).
 
 ## I want to propose changes to the project design or roadmap.
-We highly welcome proposals for changes to minor and significant parts of the project the same. To keep our decisions consistent across the contributor community, we have documents for [design goals](./design/goals.md), [tenets](./design/tenets.md), [high-level architecture](./design/architecture.md) and [FAQs](./design/FAQs.md) in the [design](./design) directory. We have feature-specific docs in some cases in the same directory. We encourage reading those docs before submitting a design or roadmap change proposal to have the fastest and best experience on getting this kind of changes merged.
+We highly welcome proposals for changes to minor and significant parts of the project the same. To keep our decisions consistent across the contributor community, we have documents for [design goals](./design/architecture.md), [tenets](./design/tenets.md), [high-level architecture](./design/architecture.md) and [FAQs](./design/FAQs.md) in the [design](./design) directory. We have feature-specific docs in some cases in the same directory. We encourage reading those docs before submitting a design or roadmap change proposal to have the fastest and best experience on getting this kind of changes merged.
 
 For submitting, feel free to cut a new [Pull Request on GitHub](https://github.com/sdavtaker/cadmium/pulls) with the proposed changes, or if you want to discuss ideas first, create a new [Issue on GitHub](https://github.com/sdavtaker/ia-devs-cd-poc/issues).
 
 ## I want to add a question to the project FAQ.
 Our preferred option is to open a new [Pull Request on GitHub](https://github.com/sdavtaker/cadmium/pulls) to add the question to our FAQ. And if you know the answer, feel free to include it in the Pull Request. Another option is to cut a new [Issue on GitHub](https://github.com/sdavtaker/ia-devs-cd-poc/issues) to discuss it and document the conclusion for FAQ inclusion.
+
 ## I want to set up my development environment to contribute to the project.
 Follow the build from source instructions in [README.md](./README.md). To run tests, run `ctest`.
