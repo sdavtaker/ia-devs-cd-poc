@@ -245,3 +245,5 @@ The CDIA-modelling library is a  C++20 library for modelling discrete event syst
 The CDIA-simulation library is a C++20 library for simulating IA-DEVS models. 
 
 The CDIA-CLI is a Command Line Interface tool for generating and managing simulation projects using CDIA libraries. We use Python-3 as the primary implementation language. The command provides a family of subcommands used to namespace tasks. This tool generates project files, generates code, builds, deploys and manages projects.  
+
+The CDIA-JN is a Python-3 library to integrate the simulator to Jupyter Notebooks. Using this interface models and experiments implementation can be quickly iterated before productionizing it.
