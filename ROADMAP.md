@@ -11,6 +11,7 @@ Project status: Proof of Concept, tracking single platform for now.
   - [x] Clang-format (llvm-style)
   - [x] LICENSE
 - [x] CONTRIBUTION.md shows how to come to this file and discuss ideas.
+- [ ] Dockerize based on jupyter/minimal-notebook.
 - [ ] CONTRIBUTION.md complete referenced architecture and design docs.
 - [ ] README.md shows basic user usage workflow.
 - [ ] README.md build and test labels.
