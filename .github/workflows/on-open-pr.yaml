@@ -1,0 +1,43 @@
+name: Open PR
+
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  clang-format-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup clang-format
+        run: sudo apt-get install -y clang-format
+      - name: Run clang-format validation
+        run: |
+          for file in $(find . -name "*.cpp" -o -name "*.hpp"); do
+            if ! clang-format -style=file -output-replacements-xml $file | grep -q "<replacement "; then
+              echo "$file is correctly formatted"
+            else
+              echo "$file is incorrectly formatted"
+              exit 1
+            fi
+          done
+  build:
+    runs-on: ubuntu-latest
+    needs: clang-format-validation
+    steps:
+      - uses: actions/checkout@v2
+      - name: setup dependencies
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git
+          cd vcpkg
+          ./bootstrap-vcpkg.sh
+          VCPKG_SYSTEM_PACKAGES=1 ./vcpkg install
+          cd ..
+      - name: Build C++ application
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
+          cmake --build .
+          ctest .
+          cmake --install .
+          cpack .
